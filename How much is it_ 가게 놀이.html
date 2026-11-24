@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How much is it? 가게 놀이</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: 초등 4학년 교실 TV에 띄우는 밝고 신나는 가게 놀이
+   IDEA: 동네 옷가게 — 줄무늬 차양, 가격표, 계산대
+   PICTURE: 대본이 말풍선으로 한 줄씩 열리는 무대 / 가격표 카드 퀴즈
+   COLOUR and TYPE: 코발트 블루 + 햇살 노랑 + 핑크, 내 대사는 빨강 / Jua + Fredoka
+   LAYOUT: 상단 차양 띠, 탭 두 개, 한 열 무대, 아래 큰 버튼 */
+:root{color-scheme:light dark;--bg:light-dark(#fffaf0,#141a2e);--card:light-dark(#ffffff,#1e2742);--ink:light-dark(#1b2240,#f3f1ea);--mute:light-dark(#6b7088,#a7adc4);--blue:#2b59c3;--sun:#ffd23f;--pink:#ff5fa2;--red:#e3262f;--line:light-dark(#e6e1d3,#2f3a5c)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 Jua,"Apple SD Gothic Neo",sans-serif;overflow-x:clip}
+.en{font-family:Fredoka,Jua,sans-serif;font-weight:600}
+.awn{height:34px;background:repeating-linear-gradient(90deg,var(--blue) 0 44px,#fff 44px 88px);border-radius:0 0 50% 50%/0 0 100% 100%;box-shadow:0 6px 0 rgba(0,0,0,.08)}
+header{padding:14px max(4vw,16px) 0;max-width:1000px;margin:auto}
+h1{margin:6px 0 2px;font-size:clamp(28px,4.4vw,44px);line-height:1.05;text-wrap:balance}
+.sub{color:var(--mute);margin:0}
+main{max-width:1000px;margin:auto;padding:14px max(4vw,16px) 48px}
+.tabs{display:flex;gap:10px;margin:14px 0}
+.tab{flex:1;font:inherit;font-size:22px;padding:14px;border-radius:18px;border:3px solid var(--blue);background:var(--card);color:var(--blue);cursor:pointer}
+.tab.on{background:var(--blue);color:#fff}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:4px solid var(--sun);outline-offset:2px}
+.panel{background:var(--card);border-radius:24px;padding:clamp(16px,3vw,28px);border:2px solid var(--line);box-shadow:0 8px 0 var(--line)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 16px}
+.lab{font-size:20px;margin:0}
+.chip{min-height:48px;padding:8px 18px;border-radius:999px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font-size:19px}
+.chip.on{background:var(--sun);border-color:#e0b300;color:#1b2240}
+.chip:disabled{opacity:.35;cursor:not-allowed}
+.big{min-height:60px;padding:12px 30px;border-radius:18px;border:0;background:var(--pink);color:#fff;font-size:24px;box-shadow:0 5px 0 #c63a7b}
+.big:active{transform:translateY(3px);box-shadow:0 2px 0 #c63a7b}
+.ghost{min-height:52px;padding:8px 18px;border-radius:16px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-size:19px}
+.hide{display:none!important}
+/* stage */
+body.playing header,body.playing .awn{display:none}
+body.playing main{max-width:1400px;padding-top:4px}
+body.playing .tabs{margin:6px 0}
+body.playing .tab{padding:6px;font-size:18px}
+.stage{display:grid;gap:4px 18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));align-items:start}
+.sc{display:flex;flex-direction:column}
+.scene{align-self:flex-start;margin:4px 0 2px;padding:0 12px;border-radius:8px;background:var(--sun);color:#1b2240;font-size:16px}
+.ln{display:flex;gap:10px;align-items:center;padding:5px 10px;border-radius:14px;margin:2px 0;cursor:pointer;border:3px solid transparent}
+.ln.past{opacity:.55}
+.ln.now{background:light-dark(#eef3ff,#26335a);border-color:var(--blue)}
+.ln.mine.now{background:light-dark(#fff0f0,#3a2130);border-color:var(--red)}
+.av{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:17px}
+.who{font-size:14px;color:var(--mute);line-height:1.1}
+.ln .en{font-size:clamp(19px,2.1vw,26px);line-height:1.2}
+.ln .ko{font-size:15px;line-height:1.25}
+.ln.mine .en{color:var(--red)}
+.ko{font-size:18px;color:#3c8c2c}
+.nokr .ko{display:none}
+.ln.mine.now .ko{display:block}
+.turn{display:inline-block;margin-left:6px;padding:0 10px;border-radius:8px;background:var(--red);color:#fff;font-size:15px;animation:pop 1s infinite alternate}
+@keyframes pop{to{transform:scale(1.12)}}
+.mask{letter-spacing:4px;color:var(--red)}
+.bar{height:8px;border-radius:9px;background:var(--line);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;width:0;background:var(--blue)}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px;padding-top:8px;border-top:2px dashed var(--line)}
+.status{text-align:center;font-size:20px;min-height:30px;margin-top:6px}
+/* quiz */
+.qtop{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:19px}
+.prog{height:14px;border-radius:9px;background:var(--line);overflow:hidden;margin:8px 0 16px}
+.prog i{display:block;height:100%;background:var(--sun);transition:width .3s}
+.qp{font-size:clamp(22px,3vw,28px);margin:6px 0 14px;text-wrap:balance}
+.shop{display:flex;align-items:center;justify-content:center;gap:clamp(10px,3vw,30px);flex-wrap:wrap;padding:18px;border-radius:20px;background:light-dark(#fff3c4,#2c2a1f);margin-bottom:14px}
+.item{font-size:clamp(64px,11vw,100px);line-height:1}
+.tag{position:relative;padding:10px 22px 10px 30px;background:#fff;color:#1b2240;border:3px solid #1b2240;border-radius:6px 16px 16px 6px;font:700 clamp(28px,5vw,44px) Fredoka,sans-serif;white-space:nowrap}
+.tag::before{content:"";position:absolute;left:9px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;border:3px solid #1b2240}
+.speaker{font-size:20px;padding:6px 14px;border-radius:12px;background:var(--card)}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;padding:14px 18px;min-height:60px;border-radius:16px;border:3px solid var(--line);background:var(--bg);color:var(--ink);font:600 clamp(20px,3vw,27px) Fredoka,Jua,sans-serif}
+.opt.ok{border-color:#22a447;background:light-dark(#dcf7e3,#173d26)}
+.opt.no{border-color:var(--red);background:light-dark(#ffe1e1,#4a1f24)}
+.opts.tags{grid-template-columns:repeat(3,minmax(0,1fr))}
+.opts.tags .opt{text-align:center;font-size:clamp(24px,4vw,36px)}
+.listen{display:flex;justify-content:center;margin:8px 0 18px}
+.say{width:120px;height:120px;border-radius:50%;border:0;background:var(--blue);color:#fff;box-shadow:0 6px 0 #1c3d8c;display:grid;place-items:center}
+.say svg{width:56px;height:56px}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;min-height:64px;padding:10px;border-radius:16px}
+.ans{border:3px dashed var(--blue);margin-bottom:10px}
+.tile{padding:8px 16px;min-height:50px;border-radius:12px;border:0;background:var(--sun);color:#1b2240;font:600 clamp(20px,3vw,26px) Fredoka,sans-serif;box-shadow:0 4px 0 #d9a900}
+.ans .tile{background:var(--blue);color:#fff;box-shadow:0 4px 0 #1c3d8c}
+.fb{font-size:24px;text-align:center;min-height:36px;margin:14px 0 4px}
+.shake{animation:sh .4s}@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.end{text-align:center;padding:18px 0}
+.stars{font-size:64px;color:var(--sun);letter-spacing:6px;-webkit-text-stroke:2px #d9a900}
+.cf{position:fixed;top:-20px;width:12px;height:18px;border-radius:3px;pointer-events:none;animation:fall 1.4s ease-in forwards;z-index:9}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+@media(prefers-reduced-motion:reduce){.cf,.turn{animation:none}.cf{display:none}}
+@media(max-width:600px){.av{width:42px;height:42px;font-size:17px}.opts.tags{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="awn"></div>
+<header>
+  <h1>How much is it? <span style="color:var(--pink)">가게 놀이</span></h1>
+  <p class="sub">Lesson 11 · 듣고 따라하기 → 역할놀이 → 퀴즈 게임</p>
+</header>
+<main>
+  <div class="tabs">
+    <button class="tab on" id="tRP">역할놀이 연습</button>
+    <button class="tab" id="tQZ">퀴즈 게임</button>
+  </div>
+
+  <!-- 역할놀이 설정 -->
+  <section id="rpSet" class="panel">
+    <p class="lab">① 연습 방법</p>
+    <div class="row" id="modeRow">
+      <button class="chip on" data-m="listen">듣고 따라하기 (모든 대사 소리)</button>
+      <button class="chip" data-m="role">역할놀이 (내 대사는 빨간 글씨, 소리 없음)</button>
+    </div>
+    <p class="lab">② 장면</p>
+    <div class="row" id="sceneRow"></div>
+    <div id="roleBox" class="hide">
+      <p class="lab">③ 내 역할</p>
+      <div class="row" id="roleRow"></div>
+    </div>
+    <p class="lab">옵션</p>
+    <div class="row">
+      <button class="chip on" id="oKo">한글 뜻 보이기</button>
+      <button class="chip" id="oSlow">천천히 말하기</button>
+      <button class="chip hide" id="oHide">도전! 내 대사 영어 가리기</button>
+    </div>
+    <div style="text-align:center;margin-top:8px"><button class="big" id="go">시작하기</button></div>
+  </section>
+
+  <!-- 역할놀이 무대 -->
+  <section id="rpStage" class="panel hide">
+    <div class="stage" id="stage"></div>
+    <div class="status" id="status"></div>
+    <div class="ctrl">
+      <button class="ghost" id="bPrev">◀ 이전</button>
+      <button class="ghost" id="bAgain">다시 듣기</button>
+      <button class="ghost" id="bPause">일시정지</button>
+      <button class="big" id="bNext">다음 ▶</button>
+      <button class="ghost" id="bSet">설정으로</button>
+    </div>
+  </section>
+
+  <!-- 퀴즈 -->
+  <section id="qz" class="panel hide"></section>
+</main>
+
+<script>
+{
+const LINES=[
+ [1,'점원','Hello! Can I help you?','안녕하세요! 도와드릴까요?'],
+ [1,'다이애나','How much is this hat?','이 모자 얼마예요?'],
+ [1,'점원',"It's three dollars.",'3달러입니다.'],
+ [1,'다이애나','Just three dollars?','단돈 3달러라고요?'],
+ [1,'점원','Yes, it is. You look beautiful.','네, 맞습니다. 아름다워 보이세요.'],
+ [1,'다이애나','Thank you. I want it.','고맙습니다. 이 모자를 원해요.'],
+ [2,'앤','How much is this dress?','이 드레스는 얼마인가요?'],
+ [2,'점원',"It's thirteen dollars.",'13달러입니다.'],
+ [2,'매슈',"Let's go home.",'집에 가자.'],
+ [3,'점원','Can I help you?','도와드릴까요?'],
+ [3,'매슈','How much is it?','이거 얼마인가요?'],
+ [3,'점원',"It's thirteen dollars.",'13달러입니다.'],
+ [3,'매슈','Here you are.','여기 있습니다.'],
+ [3,'점원','Thank you.','고맙습니다.'],
+ [4,'매슈','This is for you.','널 위한 거란다.'],
+ [4,'앤',"It's so beautiful. Thank you.",'정말 아름다워요. 고맙습니다.'],
+ [4,'매슈',"You're welcome.",'천만에.']
+].map(([s,who,en,ko])=>({s,who,en,ko}));
+const ROLES={점원:{c:'#2b59c3',p:1,v:0},다이애나:{c:'#8b5cf6',p:1.25,v:1},앤:{c:'#ff5fa2',p:1.45,v:2},매슈:{c:'#e08a00',p:.75,v:3}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ---------- 음성 ---------- */
+let voices=[];
+const loadV=()=>{try{const all=speechSynthesis.getVoices();voices=all.filter(v=>/^en[-_]US/i.test(v.lang));if(voices.length<2)voices=all.filter(v=>/^en/i.test(v.lang));}catch(e){}};
+if('speechSynthesis' in window){loadV();speechSynthesis.onvoiceschanged=loadV;}
+let slow=false;
+function speak(text,who){
+  return new Promise(res=>{
+    if(!('speechSynthesis' in window))return res();
+    let done=false;const fin=()=>{if(!done){done=true;res();}};
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text),r=ROLES[who]||ROLES['점원'];
+    u.lang='en-US';u.rate=slow?.7:.9;u.pitch=r.p;
+    if(voices.length)u.voice=voices[r.v%voices.length];
+    u.onend=fin;u.onerror=fin;
+    setTimeout(fin,text.length*(slow?140:110)+2500);
+    speechSynthesis.speak(u);
+  });
+}
+const stopSpeak=()=>{try{speechSynthesis.cancel()}catch(e){}};
+
+/* ---------- 효과음 ---------- */
+let ac;
+function tone(f,d,t='sine',when=0){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(.18,ac.currentTime+when);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+when+d);o.connect(g).connect(ac.destination);o.start(ac.currentTime+when);o.stop(ac.currentTime+when+d);}catch(e){}}
+const ding=()=>{tone(784,.15,'triangle');tone(1175,.3,'triangle',.12)};
+const buzz=()=>tone(160,.35,'square');
+function confetti(){const cs=['#ffd23f','#ff5fa2','#2b59c3','#22a447','#8b5cf6'];for(let i=0;i<34;i++){const e=document.createElement('i');e.className='cf';e.style.left=Math.random()*100+'vw';e.style.background=cs[i%5];e.style.animationDelay=Math.random()*.3+'s';document.body.appendChild(e);setTimeout(()=>e.remove(),1900);}}
+
+/* ---------- 탭 ---------- */
+function tab(q){$('tRP').classList.toggle('on',!q);$('tQZ').classList.toggle('on',q);
+  RP.run++;stopSpeak();document.body.classList.remove('playing');
+  $('rpSet').classList.toggle('hide',q);$('rpStage').classList.add('hide');$('qz').classList.toggle('hide',!q);
+  if(q)qStart();}
+$('tRP').onclick=()=>tab(false);$('tQZ').onclick=()=>tab(true);
+
+/* ---------- 역할놀이 설정 ---------- */
+const S={mode:'listen',scene:0,role:'다이애나',ko:true,hide:false};
+const SCN=[['전체',0],['장면 1',1],['장면 2',2],['장면 3',3],['장면 4',4]];
+function rolesIn(sc){return Object.keys(ROLES).filter(r=>LINES.some(l=>l.who===r&&(!sc||l.s===sc)));}
+function drawSet(){
+  $('sceneRow').innerHTML=SCN.map(([n,v])=>`<button class="chip${S.scene===v?' on':''}" data-s="${v}">${n}</button>`).join('');
+  const ok=rolesIn(S.scene);if(!ok.includes(S.role))S.role=ok[0];
+  $('roleRow').innerHTML=Object.keys(ROLES).map(r=>`<button class="chip${S.role===r?' on':''}" data-r="${r}" ${ok.includes(r)?'':'disabled'}><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${ROLES[r].c};margin-right:6px"></span>${r}</button>`).join('');
+  [...$('modeRow').children].forEach(b=>b.classList.toggle('on',b.dataset.m===S.mode));
+  $('roleBox').classList.toggle('hide',S.mode!=='role');$('oHide').classList.toggle('hide',S.mode!=='role');
+  $('oKo').classList.toggle('on',S.ko);$('oSlow').classList.toggle('on',slow);$('oHide').classList.toggle('on',S.hide);
+}
+$('modeRow').onclick=e=>{const b=e.target.closest('[data-m]');if(b){S.mode=b.dataset.m;drawSet();}};
+$('sceneRow').onclick=e=>{const b=e.target.closest('[data-s]');if(b){S.scene=+b.dataset.s;drawSet();}};
+$('roleRow').onclick=e=>{const b=e.target.closest('[data-r]');if(b&&!b.disabled){S.role=b.dataset.r;drawSet();}};
+$('oKo').onclick=()=>{S.ko=!S.ko;drawSet();};
+$('oSlow').onclick=()=>{slow=!slow;drawSet();};
+$('oHide').onclick=()=>{S.hide=!S.hide;drawSet();};
+drawSet();
+
+/* ---------- 역할놀이 진행 ---------- */
+const RP={lines:[],i:0,run:0,paused:false,reveal:false,stars:0};
+const isMine=L=>S.mode==='role'&&L&&L.who===S.role;
+$('go').onclick=()=>{RP.lines=LINES.filter(l=>!S.scene||l.s===S.scene);RP.i=0;RP.stars=0;RP.paused=false;$('bNext').onclick=next;
+  document.body.classList.add('playing');$('rpSet').classList.add('hide');$('rpStage').classList.remove('hide');$('stage').classList.toggle('nokr',!S.ko);step();};
+function render(){
+  let h='',last=0;
+  RP.lines.forEach((L,k)=>{
+    if(L.s!==last){h+=(last?'</div>':'')+`<div class="sc"><div class="scene">장면 ${L.s}</div>`;last=L.s;}
+    const now=k===RP.i,mine=isMine(L),r=ROLES[L.who];
+    const masked=mine&&S.hide&&(k>RP.i||(now&&!RP.reveal));
+    const en=masked?`<span class="mask">${L.en.replace(/[A-Za-z]/g,'_')}</span>`:esc(L.en);
+    h+=`<div class="ln${now?' now':''}${k<RP.i?' past':''}${mine?' mine':''}" data-k="${k}"><div class="av" style="background:${r.c}">${L.who[0]}</div><div style="flex:1"><div class="who">${L.who}${mine&&now?'<span class="turn">내 차례!</span>':''}</div><div class="en">${en}</div><div class="ko">${esc(L.ko)}</div>${now&&S.mode==='listen'?'<div class="bar"><i id="bar"></i></div>':''}</div></div>`;
+  });
+  $('stage').innerHTML=h+'</div>';
+  const n=$('stage').querySelector('.now');if(n&&n.getBoundingClientRect().bottom>innerHeight)n.scrollIntoView({block:'nearest'});
+  const L=RP.lines[RP.i],mine=isMine(L);
+  $('bAgain').classList.toggle('hide',mine);
+  $('bNext').textContent=mine?(S.hide&&!RP.reveal?'정답 보기':'말했어요 ✓'):'다음 ▶';
+  $('bPause').textContent=RP.paused?'계속 ▶':'일시정지';
+  $('bPrev').disabled=RP.i===0;
+}
+function bar(ms){return new Promise(res=>{const b=$('bar');if(!b)return res();b.style.transition='none';b.style.width='0';requestAnimationFrame(()=>requestAnimationFrame(()=>{b.style.transition=`width ${ms}ms linear`;b.style.width='100%';}));setTimeout(res,ms);});}
+async function step(){
+  const my=++RP.run;RP.reveal=false;const L=RP.lines[RP.i];
+  if(!L)return finish();
+  render();
+  if(RP.paused){$('status').textContent='일시정지 중';return;}
+  if(isMine(L)){$('status').innerHTML=`<b style="color:var(--red)">${S.role}</b>! 빨간 글씨를 큰 소리로 말해요 🎤`;return;}
+  $('status').textContent=`${L.who}의 말을 잘 들어요`;
+  await speak(L.en,L.who);if(my!==RP.run)return;
+  if(S.mode==='listen'){$('status').textContent='따라 말해 보세요!';await bar(1800+L.en.split(' ').length*600);}
+  else await wait(600);
+  if(my!==RP.run)return;
+  RP.i++;step();
+}
+function next(){const L=RP.lines[RP.i];
+  if(isMine(L)){if(S.hide&&!RP.reveal){RP.reveal=true;render();$('bNext').textContent='말했어요 ✓';return;}RP.stars++;ding();}
+  RP.run++;stopSpeak();RP.i++;step();}
+$('bNext').onclick=next;
+$('stage').onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;RP.run++;stopSpeak();RP.paused=false;RP.i=+b.dataset.k;step();};
+$('bPrev').onclick=()=>{RP.run++;stopSpeak();RP.i=Math.max(0,RP.i-1);step();};
+$('bAgain').onclick=()=>{RP.paused=false;RP.run++;stopSpeak();step();};
+$('bPause').onclick=()=>{RP.paused=!RP.paused;RP.run++;stopSpeak();step();};
+$('bSet').onclick=()=>{RP.run++;stopSpeak();document.body.classList.remove('playing');$('rpStage').classList.add('hide');$('rpSet').classList.remove('hide');};
+document.addEventListener('keydown',e=>{if(e.target.tagName==='BUTTON'&&(e.key===' '||e.key==='Enter'))return;if(!$('rpStage').classList.contains('hide')&&(e.key===' '||e.key==='ArrowRight')){e.preventDefault();next();}});
+function finish(){
+  stopSpeak();confetti();ding();
+  const mineN=RP.lines.filter(isMine).length;
+  $('status').textContent='';
+  $('stage').innerHTML=`<div class="end"><div class="stars">★★★</div><h2 style="font-size:36px;margin:8px 0">참 잘했어요!</h2>
+  <p style="font-size:20px">${S.mode==='role'?`${S.role} 역할로 대사 ${RP.stars}/${mineN}개를 말했어요.<br>이번엔 역할을 바꿔서 해 볼까요?`:'다 듣고 따라 했어요. 이제 역할놀이에 도전해요!'}</p></div>`;
+  $('bNext').textContent='처음부터 ▶';$('bAgain').classList.add('hide');
+  $('bNext').onclick=()=>{$('bNext').onclick=next;RP.i=0;RP.stars=0;step();};
+}
+
+/* ---------- 퀴즈 ---------- */
+const QS=[
+ {t:'pic',em:'✏️',name:'필통 pencil case',tag:'$4',sp:'여자아이가 물어봐요',p:'필통 가격을 물어보는 말은?',a:'How much is this pencil case?',o:["It's five thousand won.","Thank you."]},
+ {t:'pic',em:'👒',name:'모자 hat',tag:'₩5,000',sp:'점원이 대답해요',p:'점원이 할 알맞은 말은?',a:"It's five thousand won.",o:['How much is this hat?',"It's five dollars."]},
+ {t:'pic',em:'👗',name:'드레스 dress',tag:'$13',sp:'점원이 대답해요',p:'점원이 할 알맞은 말은?',a:"It's thirteen dollars.",o:["It's thirty dollars.","It's three dollars."]},
+ {t:'pic',em:'👒',name:'모자 hat',tag:'$3',sp:'다이애나가 물어봐요',p:'모자 가격을 물어보는 말은?',a:'How much is this hat?',o:['How much is this dress?','Here you are.']},
+ {t:'listen',s:"It's thirteen dollars.",a:'$13',o:['$3','$30']},
+ {t:'listen',s:"It's three dollars.",a:'$3',o:['$13','$30']},
+ {t:'listen',s:"It's five thousand won.",a:'₩5,000',o:['₩500','₩50,000']},
+ {t:'listen',s:"It's four dollars.",a:'$4',o:['$14','$40']},
+ {t:'reply',w:'점원',s:'Hello! Can I help you?',a:'How much is this hat?',o:["You're welcome.","It's three dollars."]},
+ {t:'reply',w:'매슈',s:'How much is it?',a:"It's thirteen dollars.",o:['Here you are.','Can I help you?']},
+ {t:'reply',w:'매슈',s:'This is for you.',a:"It's so beautiful. Thank you.",o:["You're welcome.","Let's go home."]},
+ {t:'reply',w:'앤',s:'Thank you.',a:"You're welcome.",o:['Thank you.','How much is it?']},
+ {t:'ko',s:'여기 있습니다.',a:'Here you are.',o:['Thank you.','Can I help you?']},
+ {t:'ko',s:'아름다워 보이세요.',a:'You look beautiful.',o:["It's so beautiful.",'I want it.']},
+ {t:'order',p:'필통 가격을 물어봐요',a:'How much is this pencil case?'},
+ {t:'order',p:'5,000원이라고 대답해요',a:"It's five thousand won."}
+];
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+const Q={list:[],i:0,score:0,combo:0,right:0,done:false,pick:[]};
+const SPK='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 12a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
+function qStart(){Q.list=shuf(QS).slice(0,12);Q.i=0;Q.score=0;Q.combo=0;Q.right=0;qDraw();}
+function qDraw(){
+  const q=Q.list[Q.i];Q.done=false;
+  if(!q)return qEnd();
+  const n=Q.list.length;
+  let h=`<div class="qtop"><span>문제 ${Q.i+1} / ${n}</span><span>점수 <b class="en">${Q.score}</b>${Q.combo>1?` · <span style="color:var(--pink)">${Q.combo}연속!</span>`:''}</span></div><div class="prog"><i style="width:${Q.i/n*100}%"></i></div>`;
+  if(q.t==='pic')h+=`<div class="shop"><div class="item">${q.em}</div><div><div class="tag">${esc(q.tag)}</div><div style="margin-top:8px;font-size:18px">${esc(q.name)}</div></div><div class="speaker">💬 ${esc(q.sp)}</div></div><p class="qp">${esc(q.p)}</p>`;
+  if(q.t==='listen')h+=`<p class="qp">잘 듣고 알맞은 가격표를 골라요</p><div class="listen"><button class="say" id="say" aria-label="다시 듣기">${SPK}</button></div>`;
+  if(q.t==='reply')h+=`<p class="qp">${esc(q.w)}의 말에 알맞은 대답은?</p><div class="ln now" style="opacity:1"><div class="av" style="background:${ROLES[q.w].c}">${q.w[0]}</div><div><div class="who">${q.w}</div><div class="en">${esc(q.s)}</div></div><button class="ghost" id="say" style="margin-left:auto" aria-label="듣기">듣기</button></div><div style="height:14px"></div>`;
+  if(q.t==='ko')h+=`<p class="qp">이 말을 영어로 하면?</p><div class="shop" style="font-size:clamp(28px,5vw,42px)">“${esc(q.s)}”</div>`;
+  if(q.t==='order'){Q.pick=[];h+=`<p class="qp">낱말을 순서대로 눌러 문장을 만들어요 · ${esc(q.p)}</p><div class="tiles ans" id="ans"></div><div class="tiles" id="pool"></div>`;}
+  else h+=`<div class="opts${q.t==='listen'?' tags':''}" id="opts">${shuf([q.a,...q.o]).map(o=>`<button class="opt${q.t==='listen'?' en':''}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+  h+=`<div class="fb" id="fb"></div><div style="text-align:center"><button class="big hide" id="qNext">다음 문제 ▶</button></div>`;
+  $('qz').innerHTML=h;
+  if(q.t==='order'){q.words=shuf(q.a.split(' ').map((w,k)=>({w,k})));drawTiles();}
+  else $('opts').onclick=e=>{const b=e.target.closest('.opt');if(b&&!Q.done)check(b.dataset.v===q.a,b);};
+  const s=$('say');if(s){s.onclick=()=>speak(q.s,q.w||'점원');setTimeout(()=>speak(q.s,q.w||'점원'),350);}
+  $('qNext').onclick=()=>{Q.i++;qDraw();};
+}
+function drawTiles(){const q=Q.list[Q.i];
+  $('ans').innerHTML=Q.pick.map((t,k)=>`<button class="tile" data-a="${k}">${esc(t.w)}</button>`).join('');
+  $('pool').innerHTML=q.words.filter(t=>!Q.pick.includes(t)).map(t=>`<button class="tile" data-k="${t.k}">${esc(t.w)}</button>`).join('');
+  $('pool').onclick=e=>{const b=e.target.closest('[data-k]');if(!b||Q.done)return;Q.pick.push(q.words.find(t=>t.k==b.dataset.k));tone(520,.08,'triangle');drawTiles();
+    if(Q.pick.length===q.words.length)check(Q.pick.map(t=>t.w).join(' ')===q.a,$('ans'));};
+  $('ans').onclick=e=>{const b=e.target.closest('[data-a]');if(!b||Q.done)return;Q.pick.splice(+b.dataset.a,1);drawTiles();};
+}
+function check(ok,el){
+  const q=Q.list[Q.i];Q.done=true;
+  if(ok){Q.combo++;Q.right++;Q.score+=10+(Q.combo>1?Q.combo*2:0);ding();confetti();
+    $('fb').innerHTML=`<span style="color:#22a447">딩동댕! ${Q.combo>1?Q.combo+'연속 정답!':'정답이에요!'}</span>`;}
+  else{Q.combo=0;buzz();el.classList.add('shake');
+    $('fb').innerHTML=`<span style="color:var(--red)">아쉬워요! 정답은</span> <span class="en">${esc(q.a)}</span>`;}
+  if(q.t==='order'){if(!ok){Q.pick=q.a.split(' ').map(w=>({w}));$('ans').innerHTML=Q.pick.map(t=>`<button class="tile">${esc(t.w)}</button>`).join('');}}
+  else{[...$('opts').children].forEach(b=>{if(b.dataset.v===q.a)b.classList.add('ok');else if(b===el)b.classList.add('no');});}
+  const say=q.t==='listen'?q.s:q.a;speak(say,q.t==='reply'||q.t==='pic'&&q.sp.includes('점원')?'점원':'앤');
+  $('qNext').classList.remove('hide');$('qNext').focus();
+}
+function qEnd(){
+  const n=Q.list.length,r=Q.right/n,st=r>=.9?3:r>=.7?2:1;confetti();ding();
+  $('qz').innerHTML=`<div class="end"><div class="stars">${'★'.repeat(st)}<span style="opacity:.25">${'★'.repeat(3-st)}</span></div>
+  <h2 style="font-size:36px;margin:8px 0">${st===3?'최고예요!':st===2?'잘했어요!':'다시 도전해 봐요!'}</h2>
+  <p style="font-size:22px">${n}문제 중 <b>${Q.right}</b>개 정답 · 점수 <b class="en">${Q.score}</b></p>
+  <button class="big" id="qAgain">다시 하기</button></div>`;
+  $('qAgain').onclick=qStart;
+}
+}
+</script>
+</body>
+</html>
